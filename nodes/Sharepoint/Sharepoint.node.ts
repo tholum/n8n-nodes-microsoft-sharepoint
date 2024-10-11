@@ -197,6 +197,8 @@ export class Sharepoint implements INodeType {
 		}
 
 		if(operation === 'uploadFile'){
+			const output: INodeExecutionData[] = [];
+
 			for (let i = 0; i < items.length; i++) {
 				const siteId = this.getNodeParameter('siteId', i) as string;
 				const libraryId = this.getNodeParameter('libraryId', i) as string;
@@ -220,12 +222,11 @@ export class Sharepoint implements INodeType {
 					method: 'PUT',
 					body: buffer,
 				});
-				this.logger.warn("MS upload: " + JSON.stringify(res));
 
-				return this.prepareOutputData([
-					{ json: { no: "hi2"}},
-				]);
+				output.push({ json: res });
 			}
+
+			return this.prepareOutputData(output);
 		}
 
 
