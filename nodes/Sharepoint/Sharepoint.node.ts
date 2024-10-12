@@ -6,7 +6,6 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IRequestOptions,
-	NodeOperationError,
 } from 'n8n-workflow';
 
 
@@ -64,30 +63,74 @@ export class Sharepoint implements INodeType {
 			},
 		],
 		properties: [
-			// --------------- Main Actions ------------------
+			// ---- Grouping resources we can interact with (File, Folder, Site)
+			{
+				displayName: 'Resource',
+				name: 'resource',
+				type: 'options',
+				noDataExpression: true,
+				options: [
+					{
+						name: 'File',
+						value: 'file',
+					},
+					{
+						name: 'Site',
+						value: 'site',
+					},
+				],
+				default: 'file',
+			},
+			// File Operations
 			{
 				displayName: 'Operation',
 				name: 'operation',
 				type: 'options',
+				displayOptions: {
+					show: {
+						resource: ['file'],
+					},
+				},
 				options: [
 					{
 						name: 'Get items in a folder',
+						action: 'Get items in folder',
 						value: 'getItemsInFolder',
 					},
 					{
 						name: 'Get File',
+						action: 'Get File',
 						value: 'getFile',
 					},
 					{
 						name: 'Upload File',
+						action: 'Upload File',
 						value: 'uploadFile',
-					},
-					{
-						name: 'Get Sites',
-						value: 'getSites',
 					},
 				],
 				default: 'getFile',
+				required: true,
+				noDataExpression: true,
+				description: 'The operation to perform on the file',
+			},
+			// --------------- Site Actions ------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: ['site'],
+					},
+				},
+				options: [
+					{
+						name: 'Get Sites',
+						action: 'Get Sites',
+						value: 'getSites',
+					},
+				],
+				default: 'getSites',
 				noDataExpression: true,
 				required: true,
 			},
