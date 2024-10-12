@@ -45,14 +45,14 @@ async function MSGetSiteDrives(thisRef: IExecuteFunctions | ILoadOptionsFunction
 
 export class Sharepoint implements INodeType {
 	description: INodeTypeDescription = {
-		displayName: 'SharePoint',
-		name: 'sharePoint',
+		displayName: 'Sharepoint',
+		name: 'sharepoint',
 		icon: 'file:Sharepoint.svg',
 		group: ['transform'],
 		version: 1,
-		description: 'Interact with SharePoint',
+		description: 'Interact with Sharepoint',
 		defaults: {
-			name: 'SharePoint',
+			name: 'Sharepoint',
 		},
 		inputs: ['main'],
 		outputs: ['main'],

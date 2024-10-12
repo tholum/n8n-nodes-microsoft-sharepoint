@@ -10,7 +10,6 @@ export class MicrosoftSharepointOAuth2Api implements ICredentialType {
 	documentationUrl = 'microsoft';
 
 	properties: INodeProperties[] = [
-		//https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-permissions-and-consent
 		{
 			displayName: 'Scope',
 			name: 'scope',
