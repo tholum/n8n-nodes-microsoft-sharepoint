@@ -11,9 +11,15 @@ import {
 
 
 async function makeMicrosoftRequest(thisRef: IExecuteFunctions | ILoadOptionsFunctions, resource: string, options: IRequestOptions = {}): Promise<any> {
+	let url = resource;
+	
+	if(!url.startsWith('https://')) {
+		url = "https://graph.microsoft.com/v1.0/" + resource;
+	}
+
 	const reqOptions: IRequestOptions = {
 		method: 'GET',
-		uri: "https://graph.microsoft.com/v1.0/" + resource,
+		uri: url,
 		headers: {
 			"Content-Type": "application/json",
 		},
@@ -65,6 +71,10 @@ export class Sharepoint implements INodeType {
 				type: 'options',
 				options: [
 					{
+						name: 'Get items in a folder',
+						value: 'getItemsInFolder',
+					},
+					{
 						name: 'Get File',
 						value: 'getFile',
 					},
@@ -94,7 +104,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile'],
+						operation: ['getFile', 'uploadFile', 'getItemsInFolder'],
 					},
 				},
 			},
@@ -110,7 +120,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile'],
+						operation: ['getFile', 'uploadFile', 'getItemsInFolder'],
 					},
 				},
 			},
@@ -122,7 +132,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile'],
+						operation: ['getFile', 'uploadFile', 'getItemsInFolder'],
 					},
 				},
 			},
@@ -134,7 +144,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile'],
+						operation: ['uploadFile'],
 					},
 				},
 			},
@@ -229,59 +239,57 @@ export class Sharepoint implements INodeType {
 			return this.prepareOutputData(output);
 		}
 
+		if(operation === 'getItemsInFolder'){
+			const output: INodeExecutionData[] = [];
+			for (let i = 0; i < items.length; i++) {
+				const siteId = this.getNodeParameter('siteId', i) as string;
+				const libraryId = this.getNodeParameter('libraryId', i) as string;
+				const filePath = this.getNodeParameter('filePath', i) as string;
+
+				// URL needed: /sites/{siteId}/drives/{driveId}/root:/{folder-path}:/children
+				const res = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${filePath}:/children`);
+				output.push({ json: res.value });
+			}
+
+			return this.prepareOutputData(output);
+		}
+
+		if(operation === 'getFile'){
+			const output: INodeExecutionData[] = [];
+
+			for(let i = 0; i < items.length; i++){
+				const siteId = this.getNodeParameter('siteId', i) as string;
+				const libraryId = this.getNodeParameter('libraryId', i) as string;
+				const filePath = this.getNodeParameter('filePath', i) as string;
+
+				// Get file metadata
+				const resFileDetails = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${filePath}`);
+
+				// Download the file
+				const resFileDownload = await makeMicrosoftRequest(this,  resFileDetails['@microsoft.graph.downloadUrl'], {
+					headers: {}, // Don't send the default Content-Type header
+					encoding: null, // Don't decode the response body, return a Buffer
+				});
+
+				const binaryData = await this.helpers.prepareBinaryData(
+					resFileDownload as Buffer,
+					resFileDetails.name,
+					resFileDetails.file.mimeType,
+				);
+
+				output.push({
+					json: resFileDetails,
+					binary: {
+						file: binaryData,
+					},
+				});
+			}
+
+			return this.prepareOutputData(output);
+		}
 
 		return this.prepareOutputData([
 			{ json: { no: "hi"}},
 		]);
-
-			// const reqOptions: IRequestOptions = {
-			// 	method: 'GET',
-			// 	uri: "https://graph.microsoft.com/v1.0/sites?search=*",
-			// 	headers: {
-			// 		"Content-Type": "application/json",
-			// 	},
-			// 	body: {},
-			// 	json: true,
-			// };
-			// const response = await this.helpers.requestOAuth2.call(this, 'microsoftSharepointOAuth2Api', reqOptions);
-			// this.logger.warn('Sharepoint response:' + JSON.stringify(response));
-
-		
-
-		
-
-		let item: INodeExecutionData;
-		let myString: string;
-
-		// Iterates over all input items and add the key "myString" with the
-		// value the parameter "myString" resolves to.
-		// (This could be a different value for each item in case it contains an expression)
-		for (let itemIndex = 0; itemIndex < items.length; itemIndex++) {
-			try {
-				myString = this.getNodeParameter('myString', itemIndex, '') as string;
-				item = items[itemIndex];
-
-				item.json['myString'] = myString;
-			} catch (error) {
-				// This node should never fail but we want to showcase how
-				// to handle errors.
-				if (this.continueOnFail()) {
-					items.push({ json: this.getInputData(itemIndex)[0].json, error, pairedItem: itemIndex });
-				} else {
-					// Adding `itemIndex` allows other workflows to handle this error
-					if (error.context) {
-						// If the error thrown already contains the context property,
-						// only append the itemIndex
-						error.context.itemIndex = itemIndex;
-						throw error;
-					}
-					throw new NodeOperationError(this.getNode(), error, {
-						itemIndex,
-					});
-				}
-			}
-		}
-
-		return this.prepareOutputData(items);
 	}
 }
