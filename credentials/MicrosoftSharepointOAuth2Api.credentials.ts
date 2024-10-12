@@ -7,7 +7,7 @@ export class MicrosoftSharepointOAuth2Api implements ICredentialType {
 
 	displayName = 'Microsoft Sharepoint OAuth2 API';
 
-	documentationUrl = 'microsoft';
+	documentationUrl = 'https://learn.microsoft.com/en-us/graph/auth/auth-concepts';
 
 	properties: INodeProperties[] = [
 		{

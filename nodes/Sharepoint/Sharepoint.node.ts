@@ -6,6 +6,7 @@ import {
 	INodeType,
 	INodeTypeDescription,
 	IRequestOptions,
+	NodeApiError,
 } from 'n8n-workflow';
 
 
@@ -93,25 +94,24 @@ export class Sharepoint implements INodeType {
 				},
 				options: [
 					{
-						name: 'Get items in a folder',
+						name: 'Get Items in a Folder',
 						action: 'Get items in folder',
 						value: 'getItemsInFolder',
 					},
 					{
 						name: 'Get File',
-						action: 'Get File',
+						action: 'Get file',
 						value: 'getFile',
 					},
 					{
 						name: 'Upload File',
-						action: 'Upload File',
+						action: 'Upload file',
 						value: 'uploadFile',
 					},
 				],
 				default: 'getFile',
 				required: true,
 				noDataExpression: true,
-				description: 'The operation to perform on the file',
 			},
 			// --------------- Site Actions ------------------
 			{
@@ -126,7 +126,7 @@ export class Sharepoint implements INodeType {
 				options: [
 					{
 						name: 'Get Sites',
-						action: 'Get Sites',
+						action: 'Get sites',
 						value: 'getSites',
 					},
 				],
@@ -137,9 +137,10 @@ export class Sharepoint implements INodeType {
 
 			// ---------------- Parameters -------------------
 			{
-				displayName: 'Site ID',
+				displayName: 'Site Name or ID',
 				name: 'siteId',
 				type: 'options',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 				typeOptions: {
 					loadOptionsMethod: 'getSites',
 				},
@@ -152,9 +153,10 @@ export class Sharepoint implements INodeType {
 				},
 			},
 			{
-				displayName: 'Document Library ID',
+				displayName: 'Document Library Name or ID',
 				name: 'libraryId',
 				type: 'options',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
 				typeOptions: {
 					loadOptionsMethod: 'getSiteDrives',
 					loadOptionsDependsOn: ['siteId'],
@@ -180,7 +182,7 @@ export class Sharepoint implements INodeType {
 				},
 			},
 			{
-				displayName: 'File name',
+				displayName: 'File Name',
 				name: 'fileName',
 				type: 'string',
 				default: '',
@@ -267,7 +269,9 @@ export class Sharepoint implements INodeType {
 				const folder = await makeMicrosoftRequest(this, `drives/${libraryId}/root:/${filePath}:/`);
 				if(!folder || !folder.id){
 					// Do something
-					throw new Error("Could not find folder. Is your path correct?");
+					throw new NodeApiError(this.getNode(), folder, {
+						message: "Could not find folder. Is your path correct?"
+					});
 				}
 				this.logger.info('Got folder ID ' + folder.id);
 				
