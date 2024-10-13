@@ -178,7 +178,7 @@ export class Sharepoint implements INodeType {
 				},
 			},
 			{
-				displayName: 'Target folder path',
+				displayName: 'Target Folder Path',
 				name: 'targetFolderPath',
 				type: 'string',
 				default: '',
