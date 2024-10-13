@@ -5,44 +5,13 @@ import {
 	INodePropertyOptions,
 	INodeType,
 	INodeTypeDescription,
-	IRequestOptions,
 	NodeApiError,
 } from 'n8n-workflow';
+import * as file from './actions/file/File.resource';
+import * as site from './actions/site/Site.resource';
+import * as folder from './actions/folder/Folder.resource';
 
-
-async function makeMicrosoftRequest(thisRef: IExecuteFunctions | ILoadOptionsFunctions, resource: string, options: IRequestOptions = {}): Promise<any> {
-	let url = resource;
-	
-	if(!url.startsWith('https://')) {
-		url = "https://graph.microsoft.com/v1.0/" + resource;
-	}
-
-	const reqOptions: IRequestOptions = {
-		method: 'GET',
-		uri: url,
-		headers: {
-			"Content-Type": "application/json",
-		},
-		body: {},
-		json: true,
-		...options
-	};
-
-	return await thisRef.helpers.requestOAuth2.call(thisRef, 'microsoftSharepointOAuth2Api', reqOptions);
-}
-
-async function MSGetSites(thisRef: IExecuteFunctions | ILoadOptionsFunctions): Promise<any> {
-	return await makeMicrosoftRequest(thisRef, 'sites', {
-		qs: {
-			search: '*',
-		}
-	});
-}
-
-async function MSGetSiteDrives(thisRef: IExecuteFunctions | ILoadOptionsFunctions, siteId: string): Promise<any> {
-	return await makeMicrosoftRequest(thisRef, `sites/${siteId}/drives`);
-}
-
+import { MSGetSiteDrives, MSGetSites } from './helpers/misc';
 
 export class Sharepoint implements INodeType {
 	description: INodeTypeDescription = {
@@ -76,6 +45,10 @@ export class Sharepoint implements INodeType {
 						value: 'file',
 					},
 					{
+						name: 'Folder',
+						value: 'folder',
+					},
+					{
 						name: 'Site',
 						value: 'site',
 					},
@@ -94,11 +67,6 @@ export class Sharepoint implements INodeType {
 				},
 				options: [
 					{
-						name: 'Get Items in a Folder',
-						action: 'Get items in folder',
-						value: 'getItemsInFolder',
-					},
-					{
 						name: 'Get File',
 						action: 'Get file',
 						value: 'getFile',
@@ -108,11 +76,39 @@ export class Sharepoint implements INodeType {
 						action: 'Upload file',
 						value: 'uploadFile',
 					},
+					{
+						name: 'Move File',
+						action: 'Move file',
+						value: 'moveFile',
+					},
 				],
 				default: 'getFile',
 				required: true,
 				noDataExpression: true,
 			},
+
+			// --------------- Folder Actions ------------------
+			{
+				displayName: 'Operation',
+				name: 'operation',
+				type: 'options',
+				displayOptions: {
+					show: {
+						resource: ['folder'],
+					},
+				},
+				options: [
+					{
+						name: 'Get Items in a Folder',
+						action: 'Get items in folder',
+						value: 'getItemsInFolder',
+					},
+				],
+				default: 'getItemsInFolder',
+				noDataExpression: true,
+				required: true,
+			},
+
 			// --------------- Site Actions ------------------
 			{
 				displayName: 'Operation',
@@ -148,7 +144,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile', 'getItemsInFolder'],
+						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder'],
 					},
 				},
 			},
@@ -165,7 +161,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile', 'getItemsInFolder'],
+						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder'],
 					},
 				},
 			},
@@ -177,9 +173,21 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile', 'getItemsInFolder'],
+						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder'],
 					},
 				},
+			},
+			{
+				displayName: 'Target folder path',
+				name: 'targetFolderPath',
+				type: 'string',
+				default: '',
+				required: true,
+				displayOptions: {
+					show: {
+						operation: ['moveFile'],
+					},
+				}
 			},
 			{
 				displayName: 'File Name',
@@ -241,102 +249,29 @@ export class Sharepoint implements INodeType {
 	// You can make async calls and use `await`.
 	async execute(this: IExecuteFunctions): Promise<INodeExecutionData[][]> {
 		const items = this.getInputData();
-		const operation = this.getNodeParameter('operation', 0) as string;
+		const returnData: INodeExecutionData[] = [];
 
-		if(operation === 'getSites'){
-			const output = await MSGetSites(this);
+		const operationMapping: any = {
+			'uploadFile': file.upload,
+			'getFile': file.get,
+			'moveFile': file.move,
+			'getSites': site.getAll,
+			'getItemsInFolder': folder.list,
+		};
+		
+		// Execute the operation!
+		for(let i = 0; i < items.length; i++){
+			const operation = this.getNodeParameter('operation', i) as string;
 
-			return this.prepareOutputData(
-				output.value.map((site: any) => ({ json: site }))
-			);
-		}
-
-		if(operation === 'uploadFile'){
-			const output: INodeExecutionData[] = [];
-
-			for (let i = 0; i < items.length; i++) {
-				const siteId = this.getNodeParameter('siteId', i) as string;
-				const libraryId = this.getNodeParameter('libraryId', i) as string;
-				const filePath = this.getNodeParameter('filePath', i) as string;
-				const fileName = this.getNodeParameter('fileName', i) as string;
-
-				const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
-				this.helpers.assertBinaryData(i, binaryPropertyName);
-        		const buffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
-
-				// Figure out folder ID
-				this.logger.info('Fetching folder ID...');
-				const folder = await makeMicrosoftRequest(this, `drives/${libraryId}/root:/${filePath}:/`);
-				if(!folder || !folder.id){
-					// Do something
-					throw new NodeApiError(this.getNode(), folder, {
-						message: "Could not find folder. Is your path correct?"
-					});
-				}
-				this.logger.info('Got folder ID ' + folder.id);
-				
-				const res = await makeMicrosoftRequest(this, `sites/${siteId}/drive/items/${folder.id}:/${fileName}:/content`, {
-					method: 'PUT',
-					body: buffer,
-				});
-
-				output.push({ json: res });
-			}
-
-			return this.prepareOutputData(output);
-		}
-
-		if(operation === 'getItemsInFolder'){
-			const output: INodeExecutionData[] = [];
-			for (let i = 0; i < items.length; i++) {
-				const siteId = this.getNodeParameter('siteId', i) as string;
-				const libraryId = this.getNodeParameter('libraryId', i) as string;
-				const filePath = this.getNodeParameter('filePath', i) as string;
-
-				// URL needed: /sites/{siteId}/drives/{driveId}/root:/{folder-path}:/children
-				const res = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${filePath}:/children`);
-				output.push({ json: res.value });
-			}
-
-			return this.prepareOutputData(output);
-		}
-
-		if(operation === 'getFile'){
-			const output: INodeExecutionData[] = [];
-
-			for(let i = 0; i < items.length; i++){
-				const siteId = this.getNodeParameter('siteId', i) as string;
-				const libraryId = this.getNodeParameter('libraryId', i) as string;
-				const filePath = this.getNodeParameter('filePath', i) as string;
-
-				// Get file metadata
-				const resFileDetails = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${filePath}`);
-
-				// Download the file
-				const resFileDownload = await makeMicrosoftRequest(this,  resFileDetails['@microsoft.graph.downloadUrl'], {
-					headers: {}, // Don't send the default Content-Type header
-					encoding: null, // Don't decode the response body, return a Buffer
-				});
-
-				const binaryData = await this.helpers.prepareBinaryData(
-					resFileDownload as Buffer,
-					resFileDetails.name,
-					resFileDetails.file.mimeType,
-				);
-
-				output.push({
-					json: resFileDetails,
-					binary: {
-						file: binaryData,
-					},
+			if(!operationMapping[operation]){
+				throw new NodeApiError(this.getNode(), {}, {
+					message: 'Unsupported operation called',
 				});
 			}
 
-			return this.prepareOutputData(output);
+			returnData.push(...await operationMapping[operation].execute.call(this, i));
 		}
 
-		return this.prepareOutputData([
-			{ json: { no: "hi"}},
-		]);
+		return [returnData];
 	}
 }
