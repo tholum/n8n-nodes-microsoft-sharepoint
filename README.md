@@ -12,7 +12,7 @@ This is a very early version of the node. It is not ready for production use. It
 [Compatibility](#compatibility)  
 [Usage](#usage)  <!-- delete if not using this section -->  
 [Resources](#resources)  
-[Version history](#version-history)  <!-- delete if not using this section -->  
+[Version history](#version-history) 
 
 ## Installation
 
@@ -37,4 +37,11 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 
 ## Version history
+
+* v0.1.1
+  * Restructure code + UI. Grouping operations by levels: Site, Folder, File.
+  * Added support for moving files
+
+* v0.1.0 (2024-10-12)
+  * Initial release
 
