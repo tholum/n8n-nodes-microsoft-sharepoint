@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-microsoft-sharepoint",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Custom n8n node to interact with Microsoft Sharepoint",
   "keywords": [
     "n8n-community-node-package"
@@ -53,9 +53,5 @@
   },
   "peerDependencies": {
     "n8n-workflow": "*"
-  },
-  "dependencies": {
-    "@azure/identity": "^4.4.1",
-    "@microsoft/microsoft-graph-client": "^3.0.7"
   }
 }
