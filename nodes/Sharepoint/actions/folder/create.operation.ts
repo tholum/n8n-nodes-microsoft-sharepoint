@@ -14,85 +14,56 @@ import { makeMicrosoftRequest } from "../../helpers/makeMicrosoftRequest";
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
     const siteId = this.getNodeParameter('siteId', i) as string;
     const libraryId = this.getNodeParameter('libraryId', i) as string;
-    const folderPath = this.getNodeParameter('filePath', i) as string;
     const options = this.getNodeParameter('options', i, {});
-
-    // TODO: strip trailing slash!
     
+    // Strip trailing slashes from folder path provided by user
+    const folderPath = (this.getNodeParameter('filePath', i) as string).replace(/\/$/, '');
     let directories = folderPath.split('/');
-
-    // Input: folder1/folder2/folder3 without parameters
-    //    -> Fetch ID of folder1/folder2
-    //    -> Create folder3 underneath it
-    // Input: folder1 without parameters
-    //    -> Fetch ID of root folder
-    //    -> Upload straight away
 
     // Place to store the ID of the DriveItem under which we should create the
     // next child. By default, we start at the root of the document library.
     let lastParentId = libraryId;
+
+    // Keep track of the last created folder item, so we can return that.
     let lastCreatedItem = null;
 
     // If the user doesn't want to create intermediate folders, only attempt
     // to create the last folder
     const createIntermedateFolders = (options.createIntermedateFolders as boolean) || false;
     if(createIntermedateFolders === false){
+        // Construct path of all folders, except last level
         const parent = directories.slice(0, -1).join('/');
         const last = directories.slice(-1);
 
         // Set the top most directory as the parent
-        this.logger.info('User does not want recursive creation. Fetching ID for ' + parent);
         const res = await MSGetItemDetailsByPath(this, libraryId, parent);
         lastParentId = res.id;
 
-        this.logger.info('New parent ID: ' + lastParentId);
-        // Change the 
+        // The only directory that needs to be created now is the last one
         directories = [
             ...last,
         ];
     }
 
+    // Loop over all nested directories that need to be created and create them!
     for(const [idx, folderName] of directories.entries()){
-        this.logger.info('Creating folder ' + folderName + ' under ID ' + lastParentId);
+        // When creating nested folders, the first one needs to be created at
+        // root level of the document library and requires a different API
+        // endpoint
         const createInRoot = idx == 0 && createIntermedateFolders === true;
-        this.logger.info('idx ' + idx +  ' create inroot ' + createInRoot);
         lastCreatedItem = await createFolder(this, siteId, lastParentId, folderName, createInRoot);
+
+        // Keep track of the created folder ID so we can use it as parent for
+        // the next folder.
         lastParentId = lastCreatedItem.id;
     }
 
     return [{ json : lastCreatedItem }];
-
-
-    // Loop over each folder we need to create in a nested way, starting at the
-    // top level.
-    let lastParent = null;
-    for(const folderName of directories){
-        if(lastParent === null){
-            this.logger.info('Creating top level folder, first');
-            lastParent = await MSGetItemDetailsByPath(this, libraryId, folderName);
-            continue;
-        }
-
-        // If we get here, create a new folder with the lastParent as parent
-        this.logger.info('Creating nested folder ' + folderName + ' under ID' + lastParent.id);
-        lastParent = await createFolder(this, siteId, lastParent.id, folderName);
-    }
-
-    return [{ json: lastParent }];
- 
-    // Another shortcut we could consider
-    // for(const dirName of directories) {
-        
-    // }
-    // // URL needed: /sites/{siteId}/drives/{driveId}/root:/{folder-path}:/children
-    // const res = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${filePath}:/children`);
-    // return res.value.map((item: any) => ({ json: item }));
-    return [];
 }
 
 /**
  * Helper function that creates a new folder under a given site and parent.
- * When the folder already exists, we return the data of that existing folder.
+ * When the folder already exists, we fetch and return the data of that folder.
  *  
  * @param thisRef 
  * @param siteId 
@@ -101,9 +72,12 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
  * @returns 
  */
 async function createFolder(thisRef: IExecuteFunctions, siteId: string, parentId: string, folderName: string, inRoot: boolean = false) : Promise<any> {
-    const url = inRoot ? `sites/${siteId}/drive/root/children` : `sites/${siteId}/drive/items/${parentId}/children`;
+    // We need a slightly different endpoint when creating items at root level.
+    const url = inRoot 
+                    ? `sites/${siteId}/drive/root/children` 
+                    : `sites/${siteId}/drive/items/${parentId}/children`;
+    
     try{
-        thisRef.logger.info('Create folder ' + folderName + ' inRoot? ' + inRoot);
         const res = await makeMicrosoftRequest(
             thisRef, 
             url, 
@@ -118,7 +92,6 @@ async function createFolder(thisRef: IExecuteFunctions, siteId: string, parentId
             }
         );
     
-        thisRef.logger.info('created folder: ' + JSON.stringify(res));
         return res;
     }catch(error){
         // If we got another error than 409 - CONFLICT, throw it again
@@ -126,16 +99,12 @@ async function createFolder(thisRef: IExecuteFunctions, siteId: string, parentId
             throw new NodeApiError(thisRef.getNode(), error);
         }
 
-        thisRef.logger.info('Conflict, folder already exists. Fetching details..');
-
+        // Folder already exists. Fetch its details so we can return that.
         const res = await makeMicrosoftRequest(
             thisRef, 
             url,
         );
 
-        thisRef.logger.info('Got children:' + JSON.stringify(res));
-
-        // Return the 
         return res.value.find((el: any) => el.name === folderName);
     }
 }
