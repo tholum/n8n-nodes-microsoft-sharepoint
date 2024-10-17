@@ -3,8 +3,9 @@ import { MSGetItemDetailsByPath } from "../../helpers/misc";
 import { makeMicrosoftRequest } from "../../helpers/makeMicrosoftRequest";
 
 /**
- * The first question is: what happens when you create a folder which already exists?
- *  Google Drive detects this, and adds a number to your folder name, bleh!
+ * Creates a new folder in a SharePoint site. By default, it will not create
+ * nested folders (similar to default mkdir behaviour). This can be enabled 
+ * with the "createIntermediateFolders" option (similar to mkdir -p).
  * 
  * https://learn.microsoft.com/en-us/graph/api/driveitem-post-children?view=graph-rest-1.0&tabs=http  
  * @param this
