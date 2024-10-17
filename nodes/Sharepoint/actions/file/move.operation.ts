@@ -35,25 +35,4 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
     return [{
         json: res,
     }];
-    // // Get file metadata
-    // const resFileDetails = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${filePath}`);
-
-    // // Download the file
-    // const resFileDownload = await makeMicrosoftRequest(this,  resFileDetails['@microsoft.graph.downloadUrl'], {
-    //     headers: {}, // Don't send the default Content-Type header
-    //     encoding: null, // Don't decode the response body, return a Buffer
-    // });
-
-    // const binaryData = await this.helpers.prepareBinaryData(
-    //     resFileDownload as Buffer,
-    //     resFileDetails.name,
-    //     resFileDetails.file.mimeType,
-    // );
-
-    // return [{
-    //     json: resFileDetails,
-    //     binary: {
-    //         file: binaryData,
-    //     },
-    // }];
 }
