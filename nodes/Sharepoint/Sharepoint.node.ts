@@ -103,6 +103,11 @@ export class Sharepoint implements INodeType {
 						action: 'Get items in folder',
 						value: 'getItemsInFolder',
 					},
+					{
+						name: 'Create folder',
+						action: 'Create folder',
+						value: 'createFolder',
+					},
 				],
 				default: 'getItemsInFolder',
 				noDataExpression: true,
@@ -144,7 +149,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder'],
+						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder', 'createFolder'],
 					},
 				},
 			},
@@ -161,7 +166,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder'],
+						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder', 'createFolder'],
 					},
 				},
 			},
@@ -173,7 +178,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder'],
+						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder', 'createFolder'],
 					},
 				},
 			},
@@ -213,6 +218,28 @@ export class Sharepoint implements INodeType {
 					},
 				},
 				description: 'Name of the binary property which contains the data for the file to be uploaded',
+			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				displayOptions: {
+					show: {
+						operation: ['createFolder'],
+						resource: ['folder'],
+					},
+				},
+				default: {},
+				placeholder: 'Add Option',
+				options: [
+					{
+						displayName: 'Create intermediate folders',
+						name: 'createIntermedateFolders',
+						type: 'boolean',
+						default: false,
+						description: 'Create intermediate directories if required.',
+					},
+				],
 			},
 		],
 	};
@@ -257,6 +284,7 @@ export class Sharepoint implements INodeType {
 			'moveFile': file.move,
 			'getSites': site.getAll,
 			'getItemsInFolder': folder.list,
+			'createFolder': folder.create,
 		};
 		
 		// Execute the operation!
