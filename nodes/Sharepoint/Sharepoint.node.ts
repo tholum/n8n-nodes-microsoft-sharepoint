@@ -104,7 +104,7 @@ export class Sharepoint implements INodeType {
 						value: 'getItemsInFolder',
 					},
 					{
-						name: 'Create folder',
+						name: 'Create Folder',
 						action: 'Create folder',
 						value: 'createFolder',
 					},
@@ -233,11 +233,11 @@ export class Sharepoint implements INodeType {
 				placeholder: 'Add Option',
 				options: [
 					{
-						displayName: 'Create intermediate folders',
+						displayName: 'Create Intermediate Folders',
 						name: 'createIntermedateFolders',
 						type: 'boolean',
 						default: false,
-						description: 'Create intermediate directories if required.',
+						description: 'Whether to create intermediate directories (similar to mkdir -p)',
 					},
 				],
 			},
