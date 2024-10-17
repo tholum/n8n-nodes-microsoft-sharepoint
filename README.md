@@ -25,6 +25,9 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 * File
   * Upload file
   * Get file
+* Folder
+  * Create folder
+  * List children
   
 ## Credentials
 
@@ -37,6 +40,9 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 * [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
 
 ## Version history
+
+* v0.1.2 (2024-10-17)
+  * Added support for creating folders (and nested folders)
 
 * v0.1.1
   * Restructure code + UI. Grouping operations by levels: Site, Folder, File.
