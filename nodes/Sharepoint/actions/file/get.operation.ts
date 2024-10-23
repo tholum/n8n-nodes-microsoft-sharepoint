@@ -16,15 +16,17 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
     const libraryId = this.getNodeParameter('libraryId', i) as string;
     const fileLocator = this.getNodeParameter('fileLocator', i) as any;
 
-    let fileDetails = null;
-
+    let url = '';
     if(fileLocator.mode === "path"){
-        fileDetails = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${fileLocator.path}`);
+        url = `sites/${siteId}/drives/${libraryId}/root:/${fileLocator.value}`;
     }
 
     if(fileLocator.mode === "id"){
-        fileDetails = await makeMicrosoftRequest(this, `sites/${siteId}/drive/items/${fileLocator.value}`);
+        url = `sites/${siteId}/drive/items/${fileLocator.value}`;
     }
+
+    // Get file information (for downloadUrl)
+    const fileDetails = await makeMicrosoftRequest(this, url);
 
     // Download the file
     const resFileDownload = await makeMicrosoftRequest(this,  fileDetails['@microsoft.graph.downloadUrl'], {
