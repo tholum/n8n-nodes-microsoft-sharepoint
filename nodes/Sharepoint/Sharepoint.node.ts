@@ -43,6 +43,7 @@ export class Sharepoint implements INodeType {
 					{
 						name: 'File',
 						value: 'file',
+						
 					},
 					{
 						name: 'Folder',
@@ -171,6 +172,32 @@ export class Sharepoint implements INodeType {
 				},
 			},
 			{
+				displayName: 'File',
+				name: 'fileLocator',
+				type: 'resourceLocator',
+				required: true,
+				default: { mode: 'path' },
+				modes: [
+					{
+						displayName: 'Path',
+						name: 'path',
+						type: 'string',
+						placeholder: 'e.g. /sites/test/Documents/test.txt',
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'e.g. 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+					}
+				],
+				displayOptions: {
+					show: {
+						operation: ['getFile'],
+					}
+				}
+			},
+			{
 				displayName: 'File Path',
 				name: 'filePath',
 				type: 'string',
@@ -178,7 +205,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['getFile', 'uploadFile', 'moveFile', 'getItemsInFolder', 'createFolder'],
+						operation: ['uploadFile', 'moveFile', 'getItemsInFolder', 'createFolder'],
 					},
 				},
 			},
