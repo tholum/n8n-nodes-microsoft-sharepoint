@@ -14,19 +14,21 @@ import { MSGetItemDetailsByPath } from "../../helpers/misc";
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
     const siteId = this.getNodeParameter('siteId', i) as string;
     const libraryId = this.getNodeParameter('libraryId', i) as string;
-    const filePath = this.getNodeParameter('filePath', i) as string;
     const fileName = this.getNodeParameter('fileName', i) as string;
+    const parentLocator = this.getNodeParameter('parentLocator', i) as any;
 
     const binaryPropertyName = this.getNodeParameter('binaryPropertyName', i) as string;
     this.helpers.assertBinaryData(i, binaryPropertyName);
     const buffer = await this.helpers.getBinaryDataBuffer(i, binaryPropertyName);
 
     // Figure out folder ID
-    this.logger.info('Fetching folder ID...');
-    const folder = await MSGetItemDetailsByPath(this, libraryId, filePath);
-    this.logger.info('Got folder ID ' + folder.id);
-    
-    const res = await makeMicrosoftRequest(this, `sites/${siteId}/drive/items/${folder.id}:/${fileName}:/content`, {
+    let parentId = parentLocator.value;
+    if(parentLocator.mode === 'path'){
+        const folder = await MSGetItemDetailsByPath(this, libraryId, parentLocator.value);
+        parentId = folder.id;
+    }
+
+    const res = await makeMicrosoftRequest(this, `sites/${siteId}/drive/items/${parentId}:/${fileName}:/content`, {
         method: 'PUT',
         body: buffer,
     });

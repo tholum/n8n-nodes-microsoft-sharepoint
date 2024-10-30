@@ -198,6 +198,33 @@ export class Sharepoint implements INodeType {
 				}
 			},
 			{
+				// Used to select the parent folder while uploading a new file
+				displayName: 'Parent folder',
+				name: 'parentLocator',
+				type: 'resourceLocator',
+				required: true,
+				default: { mode: 'path' },
+				modes: [
+					{
+						displayName: 'Path',
+						name: 'path',
+						type: 'string',
+						placeholder: 'e.g. /sites/test/Documents/',
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'e.g. 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+					}
+				],
+				displayOptions: {
+					show: {
+						operation: ['uploadFile'],
+					}
+				}
+			},
+			{
 				displayName: 'File Path',
 				name: 'filePath',
 				type: 'string',
@@ -205,7 +232,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['uploadFile', 'moveFile', 'getItemsInFolder', 'createFolder'],
+						operation: ['moveFile', 'getItemsInFolder', 'createFolder'],
 					},
 				},
 			},
