@@ -237,11 +237,25 @@ export class Sharepoint implements INodeType {
 				},
 			},
 			{
-				displayName: 'Target Folder Path',
-				name: 'targetFolderPath',
-				type: 'string',
-				default: '',
+				displayName: 'Target Folder',
+				name: 'targetFolderLocator',
+				type: 'resourceLocator',
+				default: { mode: 'path' },
 				required: true,
+				modes: [
+					{
+						displayName: 'Path',
+						name: 'path',
+						type: 'string',
+						placeholder: 'e.g. /sites/test/Documents/',
+					},
+					{
+						displayName: 'ID',
+						name: 'id',
+						type: 'string',
+						placeholder: 'e.g. 0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ',
+					}
+				],
 				displayOptions: {
 					show: {
 						operation: ['moveFile'],
