@@ -199,7 +199,7 @@ export class Sharepoint implements INodeType {
 			},
 			{
 				// Used to select the parent folder while uploading a new file
-				displayName: 'Parent folder',
+				displayName: 'Parent Folder',
 				name: 'parentLocator',
 				type: 'resourceLocator',
 				required: true,
