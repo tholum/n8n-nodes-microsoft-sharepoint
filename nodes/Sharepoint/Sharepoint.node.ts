@@ -193,7 +193,7 @@ export class Sharepoint implements INodeType {
 				],
 				displayOptions: {
 					show: {
-						operation: ['getFile'],
+						operation: ['getFile', 'moveFile'],
 					}
 				}
 			},
@@ -232,7 +232,7 @@ export class Sharepoint implements INodeType {
 				required: true,
 				displayOptions: {
 					show: {
-						operation: ['moveFile', 'getItemsInFolder', 'createFolder'],
+						operation: ['getItemsInFolder', 'createFolder'],
 					},
 				},
 			},

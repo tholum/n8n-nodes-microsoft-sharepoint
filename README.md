@@ -41,6 +41,11 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Version history
 
+* v0.1.4 (WIP)
+  * Added support for uploading files to a folder by ID or path
+  * Added support for moving files to other folder by ID or path
+
+
 * v0.1.3 (2024-10-23)
   * Added support to get file by ID or path
 

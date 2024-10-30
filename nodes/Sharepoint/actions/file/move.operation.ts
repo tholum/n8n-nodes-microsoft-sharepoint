@@ -13,12 +13,16 @@ import { MSGetItemDetailsByPath } from "../../helpers/misc";
 export async function execute(this: IExecuteFunctions, i: number): Promise<INodeExecutionData[]> {
     const siteId = this.getNodeParameter('siteId', i) as string;
     const libraryId = this.getNodeParameter('libraryId', i) as string;
-    const filePath = this.getNodeParameter('filePath', i) as string;
+    const fileLocator = this.getNodeParameter('fileLocator', i) as any;
     const targetFolderLocator = this.getNodeParameter('targetFolderLocator', i) as any;
 
 
     // Get details of the driveItem that needs to be moved
-    const driveItem = await MSGetItemDetailsByPath(this, libraryId, filePath);
+    let fileId = fileLocator.value;
+    if(fileLocator.mode === "path"){
+        const file = await MSGetItemDetailsByPath(this, libraryId, fileLocator.value);
+        fileId = file.id;
+    }
 
     // Get details of the new parent
     let parentId = targetFolderLocator.value;
@@ -27,10 +31,7 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
         parentId = folder.id;
     }
 
-    
-    this.logger.debug(`Moving driveItem ${driveItem.id} to ${parentId}`);
-
-    const res = await makeMicrosoftRequest(this, `sites/${siteId}/drive/items/${driveItem.id}`, {
+    const res = await makeMicrosoftRequest(this, `sites/${siteId}/drive/items/${fileId}`, {
         method: 'PATCH',
         body: {
             // Target ID
