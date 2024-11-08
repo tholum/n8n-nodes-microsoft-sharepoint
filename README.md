@@ -41,6 +41,10 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ## Version history
 
+* v0.1.5 (2024-11-08)
+  * Added support for returning all items in a folder (pagination)
+  * Honoring Microsoft's Retry-After header
+
 * v0.1.4 (2024-10-30)
   * Added support for uploading files to a folder by ID or path
   * Added support for moving files to other folder by ID or path
