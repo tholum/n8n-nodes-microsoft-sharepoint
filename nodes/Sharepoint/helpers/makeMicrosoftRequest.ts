@@ -1,4 +1,4 @@
-import { IExecuteFunctions, ILoadOptionsFunctions, IRequestOptions } from "n8n-workflow";
+import { IExecuteFunctions, ILoadOptionsFunctions, IN8nHttpFullResponse, IRequestOptions } from "n8n-workflow";
 
 export async function makeMicrosoftRequest(thisRef: IExecuteFunctions | ILoadOptionsFunctions, resource: string, options: IRequestOptions = {}): Promise<any> {
 	let url = resource;
@@ -15,8 +15,23 @@ export async function makeMicrosoftRequest(thisRef: IExecuteFunctions | ILoadOpt
 		},
 		body: {},
 		json: true,
-		...options
+		...options,
+		resolveWithFullResponse: true,
 	};
 
-	return await thisRef.helpers.requestOAuth2.call(thisRef, 'microsoftSharepointOAuth2Api', reqOptions);
+	const output = await thisRef.helpers.requestOAuth2.call(thisRef, 'microsoftSharepointOAuth2Api', reqOptions) as IN8nHttpFullResponse;
+
+	// Handle throttled responses. Microsoft Graph will return 429 (Too many
+	// requests) with a "Retry-After" header that indicates how many seconds
+	// we should wait for the next request.
+	if(output.statusCode === 429 && output.headers['Retry-After']) {
+		const retryAfter = parseInt(output.headers['Retry-After'] as string, 10) || 10;
+
+		thisRef.logger.warn("Sharepoint requests throttled. Waiting " + retryAfter + " seconds to make next request");
+		await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+
+		return await makeMicrosoftRequest(thisRef, resource, options);
+	}
+
+	return output.body;
 }
