@@ -309,6 +309,28 @@ export class Sharepoint implements INodeType {
 					},
 				],
 			},
+			{
+				displayName: 'Options',
+				name: 'optionsGetItemsInFolder',
+				type: 'collection',
+				displayOptions: {
+					show: {
+						operation: ['getItemsInFolder'],
+						resource: ['folder'],
+					},
+				},
+				default: {},
+				placeholder: 'Add Option',
+				options: [
+					{
+						displayName: 'Return All',
+						name: 'returnAll',
+						type: 'boolean',
+						default: false,
+						description: 'Weather to return all results or only the first 200.',
+					},
+				],
+			},
 		],
 	};
 

@@ -15,8 +15,26 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
     const siteId = this.getNodeParameter('siteId', i) as string;
     const libraryId = this.getNodeParameter('libraryId', i) as string;
     const filePath = this.getNodeParameter('filePath', i) as string;
+    const options = this.getNodeParameter('optionsGetItemsInFolder', i, {}) as any;
+    const returnAll = options.returnAll || false;
+
+    const output = [];
 
     // URL needed: /sites/{siteId}/drives/{driveId}/root:/{folder-path}:/children
-    const res = await makeMicrosoftRequest(this, `sites/${siteId}/drives/${libraryId}/root:/${filePath}:/children`);
-    return res.value.map((item: any) => ({ json: item }));
+    let requestUrl: string|null = `sites/${siteId}/drives/${libraryId}/root:/${filePath}:/children`;
+
+    // Keep looping while we have a requestUrl. This will be changed to support
+    // paging and set to null when we reach the end.
+    while(requestUrl !== null){
+        const res = await makeMicrosoftRequest(this, requestUrl);
+        output.push(...res.value);
+
+        if(returnAll === false){
+            break;
+        }
+
+        requestUrl = res['@odata.nextLink'] || null;
+    }
+
+    return output.map((item: any) => ({ json: item }));
 }
