@@ -327,7 +327,7 @@ export class Sharepoint implements INodeType {
 						name: 'returnAll',
 						type: 'boolean',
 						default: false,
-						description: 'Weather to return all results or only the first 200.',
+						description: 'Whether to return all results or only up to a given limit',
 					},
 				],
 			},
