@@ -24,7 +24,7 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
     // Figure out folder ID
     let parentId = parentLocator.value;
     if(parentLocator.mode === 'path'){
-        const folder = await MSGetItemDetailsByPath(this, libraryId, parentLocator.value);
+        const folder = await MSGetItemDetailsByPath(this, siteId, libraryId, parentLocator.value);
         parentId = folder.id;
     }
 

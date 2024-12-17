@@ -15,7 +15,7 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
     const siteId = this.getNodeParameter('siteId', i) as string;
     const libraryId = this.getNodeParameter('libraryId', i) as string;
     const fileLocator = this.getNodeParameter('fileLocator', i) as any;
-    const options = this.getNodeParameter('options', i, {}) as { includeExtraFields?: boolean };
+    const options = this.getNodeParameter('getFileOptions', i, {}) as { includeExtraFields?: boolean };
 
     let url = '';
     if(fileLocator.mode === "path"){

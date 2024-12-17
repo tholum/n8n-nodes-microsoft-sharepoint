@@ -289,7 +289,7 @@ export class MicrosoftSharepoint implements INodeType {
 			},
 			{
 				displayName: 'Options',
-				name: 'options',
+				name: 'getFileOptions',
 				type: 'collection',
 				displayOptions: {
 					show: {
@@ -311,7 +311,7 @@ export class MicrosoftSharepoint implements INodeType {
 			},
 			{
 				displayName: 'Options',
-				name: 'options',
+				name: 'createFolderOptions',
 				type: 'collection',
 				displayOptions: {
 					show: {

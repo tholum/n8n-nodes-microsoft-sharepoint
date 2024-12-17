@@ -1,5 +1,17 @@
-import { IExecuteFunctions, ILoadOptionsFunctions, NodeApiError } from "n8n-workflow";
+import { IExecuteFunctions, ILoadOptionsFunctions } from "n8n-workflow";
 import { makeMicrosoftRequest } from "./makeMicrosoftRequest";
+
+export async function MSGetItemDetailsByPath(
+	thisRef: IExecuteFunctions | ILoadOptionsFunctions,
+	siteId: string,
+	driveId: string,
+	path: string
+): Promise<any> {
+	return await makeMicrosoftRequest(
+		thisRef,
+		`sites/${siteId}/drives/${driveId}/root:/${path}`
+	);
+}
 
 export async function MSGetSites(thisRef: IExecuteFunctions | ILoadOptionsFunctions): Promise<any> {
 	let allSites: any[] = [];
@@ -33,7 +45,7 @@ export async function MSGetSites(thisRef: IExecuteFunctions | ILoadOptionsFuncti
 	} while (nextLink);
 
 	// Log the sites for debugging
-	thisRef.logger.info('Available SharePoint sites:', JSON.stringify(allSites, null, 2));
+	thisRef.logger.info('Available SharePoint sites:', { sites: allSites });
 
 	return { value: allSites };
 }
@@ -68,8 +80,7 @@ export async function MSGetSiteDrives(thisRef: IExecuteFunctions | ILoadOptionsF
 	} while (nextLink);
 
 	// Log the drives for debugging
-	thisRef.logger.info('Available drives for site:', JSON.stringify(allDrives, null, 2));
+	thisRef.logger.info('Available drives for site:', { drives: allDrives });
 
 	return { value: allDrives };
 }
-

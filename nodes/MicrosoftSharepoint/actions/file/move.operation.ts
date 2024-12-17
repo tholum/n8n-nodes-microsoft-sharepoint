@@ -20,14 +20,14 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
     // Get details of the driveItem that needs to be moved
     let fileId = fileLocator.value;
     if(fileLocator.mode === "path"){
-        const file = await MSGetItemDetailsByPath(this, libraryId, fileLocator.value);
+        const file = await MSGetItemDetailsByPath(this, siteId, libraryId, fileLocator.value);
         fileId = file.id;
     }
 
     // Get details of the new parent
     let parentId = targetFolderLocator.value;
     if(targetFolderLocator.mode === "path"){
-        const folder = await MSGetItemDetailsByPath(this, libraryId, targetFolderLocator.value);
+        const folder = await MSGetItemDetailsByPath(this, siteId, libraryId, targetFolderLocator.value);
         parentId = folder.id;
     }
 

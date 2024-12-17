@@ -37,7 +37,7 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
         const last = directories.slice(-1);
 
         // Set the top most directory as the parent
-        const res = await MSGetItemDetailsByPath(this, libraryId, parent);
+        const res = await MSGetItemDetailsByPath(this, siteId, libraryId, parent);
         lastParentId = res.id;
 
         // The only directory that needs to be created now is the last one
