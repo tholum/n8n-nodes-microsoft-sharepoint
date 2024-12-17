@@ -15,6 +15,7 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
     const siteId = this.getNodeParameter('siteId', i) as string;
     const libraryId = this.getNodeParameter('libraryId', i) as string;
     const fileLocator = this.getNodeParameter('fileLocator', i) as any;
+    const options = this.getNodeParameter('options', i, {}) as { includeExtraFields?: boolean };
 
     let url = '';
     if(fileLocator.mode === "path"){
@@ -40,8 +41,19 @@ export async function execute(this: IExecuteFunctions, i: number): Promise<INode
         fileDetails.file.mimeType,
     );
 
+    // Get the input data if includeExtraFields is enabled
+    const items = this.getInputData();
+    let outputJson = fileDetails;
+
+    if (options.includeExtraFields && items[i]?.json) {
+        outputJson = {
+            ...items[i].json,
+            ...fileDetails,
+        };
+    }
+
     return [{
-        json: fileDetails,
+        json: outputJson,
         binary: {
             file: binaryData,
         },

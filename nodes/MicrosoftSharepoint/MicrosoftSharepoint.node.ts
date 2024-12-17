@@ -293,6 +293,28 @@ export class MicrosoftSharepoint implements INodeType {
 				type: 'collection',
 				displayOptions: {
 					show: {
+						operation: ['getFile'],
+						resource: ['file'],
+					},
+				},
+				default: {},
+				placeholder: 'Add Option',
+				options: [
+					{
+						displayName: 'Include Extra Fields',
+						name: 'includeExtraFields',
+						type: 'boolean',
+						default: false,
+						description: 'Whether to include input data in the output',
+					},
+				],
+			},
+			{
+				displayName: 'Options',
+				name: 'options',
+				type: 'collection',
+				displayOptions: {
+					show: {
 						operation: ['createFolder'],
 						resource: ['folder'],
 					},
@@ -328,6 +350,13 @@ export class MicrosoftSharepoint implements INodeType {
 						type: 'boolean',
 						default: false,
 						description: 'Whether to return all results or only up to a given limit',
+					},
+					{
+						displayName: 'Recursive',
+						name: 'recursive',
+						type: 'boolean',
+						default: false,
+						description: 'Whether to list items in subfolders recursively',
 					},
 				],
 			},
