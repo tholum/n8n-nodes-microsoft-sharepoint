@@ -142,7 +142,7 @@ export class Sharepoint implements INodeType {
 				displayName: 'Site Name or ID',
 				name: 'siteId',
 				type: 'options',
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				typeOptions: {
 					loadOptionsMethod: 'getSites',
 				},
@@ -158,7 +158,7 @@ export class Sharepoint implements INodeType {
 				displayName: 'Document Library Name or ID',
 				name: 'libraryId',
 				type: 'options',
-				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>',
+				description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 				typeOptions: {
 					loadOptionsMethod: 'getSiteDrives',
 					loadOptionsDependsOn: ['siteId'],

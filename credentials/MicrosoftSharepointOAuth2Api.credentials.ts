@@ -14,8 +14,7 @@ export class MicrosoftSharepointOAuth2Api implements ICredentialType {
 			displayName: 'Scope',
 			name: 'scope',
 			type: 'hidden',
-			// TODO: This should not be this broad!
-			default: 'openid offline_access User.ReadWrite.All Group.ReadWrite.All Chat.ReadWrite Sites.ReadWrite.All',
+			default: 'openid offline_access User.Read.All Sites.Read.All',
 		},
 	];
 }

@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-microsoft-sharepoint",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Custom n8n node to interact with Microsoft Sharepoint",
   "keywords": [
     "n8n-community-node-package"
